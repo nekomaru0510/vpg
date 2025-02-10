@@ -1,0 +1,31 @@
+# Sample Container
+version = 0.6.0
+
+[container]
+name = "Example Container"
+test = false
+
+[proj]
+virt = true
+
+[[proj.vm]]
+template = "linux"
+os = "linux"
+
+[[proj.vm]]
+template = "freertos"
+os = "freertos"
+
+[kernel]
+template = "rtkernel"
+
+[env]
+template = "qemu_virt"
+arch = "rv64"
+hext = true
+num_of_cpus = 2
+cores = [0, 1]
+bsp = 0
+serial = ["uart", "www.hogehoge"]
+intc = ["plic"]
+timer = ["clint"]
