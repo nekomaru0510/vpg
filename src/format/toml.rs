@@ -14,7 +14,11 @@ impl TraitFormat for Toml {
     fn parse(text: String) -> Result<SystemConfig, FormatError> {
         match text.parse::<toml::Value>() {
             Ok(t) => inner_parse(t),
-            Err(_) => Err(FormatError::ParseError("Failed to parse TOML".into())),
+            Err(e) => {
+                println!("{}", e);
+                Err(FormatError::ParseError(format!("Failed to parse TOML")))
+            }
+            
         }
     }
 }

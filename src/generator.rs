@@ -56,6 +56,8 @@ fn modify_cargo_toml(path: &String, system: &SystemConfig) {
 fn generate_config_toml(path: &String, system: &SystemConfig) {
     fs::create_dir_all(&(path.to_string()+"/.cargo")).unwrap();
     fs::copy("template/.cargo/config.toml", &(path.to_string()+"/.cargo/config.toml")).unwrap();
+    fs::copy("template/target.json", &(path.to_string()+"/target.json")).unwrap(); 
+    fs::copy("template/target.ld", &(path.to_string()+"/target.ld")).unwrap();
 }
 
 fn file_exists(path: &str) -> bool {
