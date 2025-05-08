@@ -45,8 +45,12 @@ fn generate_project(name: &String) {
 }
 
 fn generate_source(path: &String, system: &SystemConfig) {
-    fs::copy("template/setup.rs", &(path.to_string()+"/src/setup.rs")).unwrap();
+
     fs::copy("template/main.rs", &(path.to_string()+"/src/main.rs")).unwrap();
+
+    //fs::copy("template/setup.rs", &(path.to_string()+"/src/setup.rs")).unwrap();
+    let content = replace_from_template("template/setup.rs", &[("{{NUM_OF_CPUS}}", "12")]);
+    fs::write(&(path.to_string()+"/src/setup.rs"), content).expect("Failed to write output file");
 }
 
 fn modify_cargo_toml(path: &String, system: &SystemConfig) {
@@ -73,6 +77,13 @@ fn append_to_file(path: &str, content: &str) -> io::Result<()> {
     Ok(())
 }
 
+fn replace_from_template(template_path: &str, replacements: &[(&str, &str)]) -> String {
+    let mut content = fs::read_to_string(template_path).expect("Failed to read template");
+    for &(placeholder, replacement) in replacements {
+        content = content.replace(placeholder, replacement);
+    }
+    content
+}
 
 #[derive(Debug)]
 pub enum GeneratorError {

@@ -30,7 +30,7 @@ use violet::app_init;
 app_init!(setup);
 
 pub const NUM_OF_CONTAINERS: usize = 1;
-pub const NUM_OF_CPUS: usize = 2;
+pub const NUM_OF_CPUS: usize = {{NUM_OF_CPUS}};
 pub const STACK_SIZE: usize = 0x4000;
 
 pub const CORE0_SHIFT: usize = 0;
