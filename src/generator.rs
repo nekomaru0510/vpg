@@ -11,7 +11,8 @@ pub struct Generator {}
 impl Generator {
     pub fn generate(name: &String, system: &SystemConfig) {
         
-        let path: String = "../proj/".to_string() + name;
+        // [todo fix] Path should be specified via command line arguments
+        let path: String = "../../proj/".to_string() + name;
 
         if file_exists(&path) {
             println!("Error: {} already exists", path);
