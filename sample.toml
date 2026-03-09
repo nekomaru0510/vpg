@@ -1,32 +1,85 @@
-# Sample Container
+# Sample Configuration for VPG v0.6
 
 version = 0.6
-
-[container]
-name = "Example Container"
+name = "Multi-OS Project"
 test = false
 
-[proj]
-virt = true
-
-[[proj.vm]]
-template = "linux"
+[vm_linux]
 os = "linux"
+os_version = "6.1.0"
 
-[[proj.vm]]
-template = "freertos"
+[vm_linux.cpus]
+num_cpus = 2
+pcpu_mapping = [1, 2]
+
+[[vm_linux.memory]]
+guest_base = 0x80000000
+host_base = 0x80000000
+size = 0x8000000
+
+[[vm_linux.memory]]
+guest_base = 0x88100000
+host_base = 0x88100000
+size = 0x200000
+
+[[vm_linux.vdev]]
+device = "vplic"
+guest_base = 0x0c000000
+size = 0x400000
+
+[vm_linux.vdev.config]
+vcpu_mapping = [1, 0]
+
+[vm_freertos]
 os = "freertos"
+os_version = "10.4.6"
+
+[vm_freertos.cpus]
+num_cpus = 1
+pcpu_mapping = [3]
+
+[[vm_freertos.memory]]
+guest_base = 0x80000000
+host_base = 0x90000000
+size = 0x1000000
+
+[[vm_freertos.vdev]]
+device = "vuart"
+guest_base = 0x10000000
+size = 0x20
 
 [kernel]
-template = "rtkernel"
+scheduler = "fifo"
+dispatcher = "minimal"
+heap_size = 0x20000
+stack_size = 0x4000
 
 [env]
-template = "qemu_virt"
 arch = "rv64"
 hext = true
-num_of_cpus = 2
-cores = [0, 1]
+num_of_cpus = 4
+cores = [0, 1, 2, 3]
 bsp = 0
-serial = ["uart", "www.hogehoge"]
-intc = ["plic"]
-timer = ["clint"]
+
+[env.memory]
+base = 0x80000000
+size = 0x40000000
+
+[env.qemu]
+kernel_path = "/opt/riscv/linux/vmlinux.bin"
+initrd_path = "/opt/riscv/busybox/_install"
+
+[[env.device]]
+device = "uart"
+base = 0x10000000
+size = 0x20
+
+[[env.device]]
+device = "clint"
+base = 0x02000000
+size = 0x10000
+
+[[env.device]]
+device = "plic"
+base = 0x0c000000
+size = 0x400000
