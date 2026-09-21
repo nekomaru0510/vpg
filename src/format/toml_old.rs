@@ -315,3 +315,91 @@ fn parse_kernel(table: &toml::Value) -> Result<KernelConfig, FormatError> {
         stack_size,
     })
 }
+        num_of_cpus,
+        cores,
+        bsp,
+        memory,
+        devices,
+    })
+}
+
+fn parse_physical_memory(env: &toml::Value) -> Result<PhysicalMemoryConfig, FormatError> {
+    if let Some(mem) = env.get("memory") {
+        let base = mem.get("base")
+            .and_then(|v| v.as_integer())
+            .unwrap_or(0x80000000) as u64;
+        
+        let size = mem.get("size")
+            .and_then(|v| v.as_integer())
+            .unwrap_or(0x40000000) as u64;
+        
+        Ok(PhysicalMemoryConfig { base, size })
+    } else {
+        Ok(PhysicalMemoryConfig { base: 0x80000000, size: 0x40000000 })
+    }
+}
+
+fn parse_devices(env: &toml::Value) -> Result<Vec<DeviceConfig>, FormatError> {
+    let mut devices = Vec::new();
+    
+    if let Some(dev_array) = env.get("device") {
+        if let Some(dev_list) = dev_array.as_array() {
+            for dev_value in dev_list {
+                let device = dev_value.get("device")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("unknown")
+                    .to_string();
+                
+                let base = dev_value.get("base")
+                    .and_then(|v| v.as_integer())
+                    .unwrap_or(0) as u64;
+                
+                let size = dev_value.get("size")
+                    .and_then(|v| v.as_integer())
+                    .unwrap_or(0) as u64;
+                
+                devices.push(DeviceConfig { device, base, size });
+            }
+        }
+    }
+    
+    Ok(devices)
+}
+
+fn parse_kernel(table: &toml::Value) -> Result<KernelConfig, FormatError> {
+    let kernel = table.get("kernel");
+    
+    let template = kernel
+        .and_then(|k| k.get("template"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("rtkernel")
+        .to_string();
+    
+    let scheduler = kernel
+        .and_then(|k| k.get("scheduler"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    
+    let dispatcher = kernel
+        .and_then(|k| k.get("dispatcher"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    
+    let heap_size = kernel
+        .and_then(|k| k.get("heap_size"))
+        .and_then(|v| v.as_integer())
+        .map(|i| i as u64);
+    
+    let stack_size = kernel
+        .and_then(|k| k.get("stack_size"))
+        .and_then(|v| v.as_integer())
+        .map(|i| i as u64);
+
+    Ok(KernelConfig {
+        template,
+        scheduler,
+        dispatcher,
+        heap_size,
+        stack_size,
+    })
+}

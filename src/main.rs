@@ -11,7 +11,6 @@ mod generator;
 
 use std::env;
 use getopts::Options;
-use crate::param::{SystemConfig, ContainerConfig};
 use crate::format::toml::Toml;
 use crate::format::Parser;
 use crate::generator::Generator;
@@ -23,6 +22,13 @@ fn print_usage(program: &str, opts: Options) {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
+    
+    // Check for test mode
+    if args.len() > 1 && args[1] == "test" {
+        test_parser();
+        return Ok(());
+    }
+    
     let program = &args[0];
 
     // //////////////////////////
@@ -83,4 +89,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Generator::generate(&project_name, &system);
 
     Ok(())
+}
+
+fn test_parser() {
+    use std::fs;
+    
+    println!("Testing VPG TOML Parser...");
+    
+    let content = fs::read_to_string("test_config.toml")
+        .expect("Failed to read test configuration file");
+    
+    match Parser::parse::<Toml>(content) {
+        Ok(config) => {
+            println!("✓ Successfully parsed TOML configuration");
+            println!("  Version: {}", config.version);
+            println!("  Name: {}", config.name);
+            if let Some(test) = config.test {
+                println!("  Test mode: {}", test);
+            }
+            println!("  VMs: {}", config.vms.len());
+            println!("  Environment Arch: {}", config.environment.arch);
+            println!("  Environment CPUs: {}", config.environment.num_of_cpus);
+            println!("  Physical Memory Base: 0x{:x}", config.environment.memory.base);
+            println!("  Physical Memory Size: 0x{:x}", config.environment.memory.size);
+            println!("  Devices: {}", config.environment.devices.len());
+            
+            for (vm_name, vm) in &config.vms {
+                println!("  VM '{}': {}", vm_name, vm.os);
+                if let Some(version) = &vm.os_version {
+                    println!("    OS Version: {}", version);
+                }
+                println!("    CPUs: {}", vm.cpus.num_cpus);
+                println!("    Memory Mappings: {}", vm.memory.len());
+                println!("    Virtual Devices: {}", vm.vdev.len());
+            }
+            
+            if let Some(scheduler) = &config.kernel.scheduler {
+                println!("  Kernel Scheduler: {}", scheduler);
+            }
+        }
+        Err(e) => {
+            println!("✗ Failed to parse TOML configuration: {:?}", e);
+        }
+    }
 }
